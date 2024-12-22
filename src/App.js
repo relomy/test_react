@@ -1,27 +1,26 @@
-// import './App.css';
-// import { Routes, Route } from "react-router-dom";
-// import About from "./routes/About";
-// import Careers from "./routes/Careers";
-// import Home from "./routes/Home";
-// import Navbar from './Navbar';
-// function App() {
-//   return (
-//     <>
-//       <Navbar />
-//       <Routes>
-//         <Route path="/" element={<Home />} />
-//         <Route path="/upload" element={<Upload />} />
-//         <Route path="/about" element={<About />} />
-//         <Route path="/careers" element={<Careers />} />
-//       </Routes>
-//     </>
-//   );
-// }
-// export default App;
 import React, { useState } from "react";
 import Papa from "papaparse";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Box,
+} from "@mui/material";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
 
 function App() {
@@ -32,7 +31,6 @@ function App() {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Parse CSV
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -44,7 +42,6 @@ function App() {
         }));
         setData(parsedData);
 
-        // Analyze data for chart
         const winningsBySport = parsedData.reduce((acc, row) => {
           const sport = row["Sport"];
           const winnings = row.Winnings_Non_Ticket + row.Winnings_Ticket;
@@ -52,7 +49,6 @@ function App() {
           return acc;
         }, {});
 
-        // Convert to array format for charting
         const chartDataArray = Object.entries(winningsBySport).map(([sport, totalWinnings]) => ({
           sport,
           totalWinnings,
@@ -63,13 +59,21 @@ function App() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>DraftKings Contest Analyzer</h1>
-      <input type="file" accept=".csv" onChange={handleFileUpload} style={{ marginBottom: "20px" }} />
+    <Box sx={{ padding: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        DraftKings Contest Analyzer
+      </Typography>
+
+      <Button variant="contained" component="label" sx={{ marginBottom: 2 }}>
+        Upload CSV
+        <input type="file" accept=".csv" hidden onChange={handleFileUpload} />
+      </Button>
 
       {data.length > 0 && (
         <>
-          <h2>Total Winnings by Sport</h2>
+          <Typography variant="h5" gutterBottom>
+            Total Winnings by Sport
+          </Typography>
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -77,32 +81,36 @@ function App() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="totalWinnings" fill="#8884d8" />
+              <Bar dataKey="totalWinnings" fill="#1976d2" />
             </BarChart>
           </ResponsiveContainer>
 
-          <h2>Data Table</h2>
-          <table border="1" style={{ width: "100%", textAlign: "left", marginTop: "20px" }}>
-            <thead>
-              <tr>
-                {Object.keys(data[0]).map((key) => (
-                  <th key={key}>{key}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((row, index) => (
-                <tr key={index}>
-                  {Object.values(row).map((value, i) => (
-                    <td key={i}>{value}</td>
+          <Typography variant="h5" gutterBottom sx={{ marginTop: 4 }}>
+            Uploaded Data Table
+          </Typography>
+          <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  {Object.keys(data[0]).map((key) => (
+                    <TableCell key={key}>{key}</TableCell>
                   ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.map((row, index) => (
+                  <TableRow key={index}>
+                    {Object.values(row).map((value, i) => (
+                      <TableCell key={i}>{value}</TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </>
       )}
-    </div>
+    </Box>
   );
 }
 
