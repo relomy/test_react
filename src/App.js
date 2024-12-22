@@ -1,28 +1,12 @@
 import React, { useState } from "react";
-import Papa from "papaparse";
-import {
-  Typography,
-  Button,
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Grid,
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import dayjs from "dayjs";
+import Papa from "papaparse";
+import Chart from "./components/Chart";
+import Filters from "./components/Filters";
+import DataTable from "./components/DataTable";
+import UploadButton from "./components/UploadButton";
 
 function App() {
   const [data, setData] = useState([]);
@@ -48,7 +32,7 @@ function App() {
           Contest_Date_EST: dayjs(row["Contest_Date_EST"]),
         }));
         setData(parsedData);
-        setFilteredData(parsedData); // No default filter, show all data
+        setFilteredData(parsedData);
         updateChartData(parsedData);
       },
     });
@@ -79,6 +63,7 @@ function App() {
       amountWon: parseFloat(item.amountWon.toFixed(2)),
     }));
 
+    // Ensure this line exists to use setChartData
     setChartData(chartDataArray);
   };
 
@@ -125,9 +110,14 @@ function App() {
   const currencyFormatter = (value) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const columns = [
-    { field: "Contest_Date_EST", headerName: "Contest Date (EST)", flex: 1 },
+    {
+      field: "Contest_Date_EST",
+      headerName: "Contest Date (EST)",
+      flex: 1,
+      valueFormatter: (params) => dayjs(params.value).format("YYYY-MM-DD HH:mm"),
+    },
     ...Object.keys(data[0] || {})
-      .filter((key) => key !== "Contest_Date_EST")
+      .filter((key) => !["Game_Type", "Entry_Key", "Contest_Key", "Contest_Date_EST"].includes(key))
       .map((key) => ({ field: key, headerName: key, flex: 1 })),
   ];
 
@@ -136,99 +126,22 @@ function App() {
       <Typography variant="h4" gutterBottom>
         DraftKings Contest Analyzer
       </Typography>
-
-      <Button variant="contained" component="label" sx={{ marginBottom: 2 }}>
-        Upload CSV
-        <input type="file" accept=".csv" hidden onChange={handleFileUpload} />
-      </Button>
-
+      <UploadButton onFileUpload={handleFileUpload} />
       {data.length > 0 && (
         <>
-          <Typography variant="h5" gutterBottom>
-            Total Winnings by Sport
-          </Typography>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="sport" />
-              <YAxis tickFormatter={currencyFormatter} />
-              <Tooltip formatter={(value) => currencyFormatter(value)} />
-              <Legend />
-              <Bar dataKey="totalWinnings" fill="#2196f3" name="Total Winnings" />
-              <Bar dataKey="amountSpent" fill="#f44336" name="Amount Spent" />
-              <Bar dataKey="amountWon" fill="#4caf50" name="Amount Won" />
-            </BarChart>
-          </ResponsiveContainer>
-
-          <Typography variant="h5" gutterBottom sx={{ marginTop: 4 }}>
-            Uploaded Data Table
-          </Typography>
-
-          <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
-                <InputLabel>Filter by Sport</InputLabel>
-                <Select value={selectedSport} onChange={(e) => setSelectedSport(e.target.value)}>
-                  <MenuItem value="">All Sports</MenuItem>
-                  {[...new Set(data.map((row) => row["Sport"]))].map((sport) => (
-                    <MenuItem key={sport} value={sport}>
-                      {sport}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
-                <InputLabel>Filter by Date</InputLabel>
-                <Select
-                  value={selectedDateRange}
-                  onChange={(e) => setSelectedDateRange(e.target.value)}
-                >
-                  <MenuItem value="All Time">All Time</MenuItem>
-                  <MenuItem value="Last 30 Days">Last 30 Days</MenuItem>
-                  <MenuItem value="Last 90 Days">Last 90 Days</MenuItem>
-                  <MenuItem value="Last 180 Days">Last 180 Days</MenuItem>
-                  <MenuItem value="Last 365 Days">Last 365 Days</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Search Text"
-                variant="outlined"
-                fullWidth
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-            </Grid>
-          </Grid>
-
-          <Grid container spacing={2}>
-            <Grid item>
-              <Button variant="contained" onClick={handleFilter}>
-                Apply Filters
-              </Button>
-            </Grid>
-            <Grid item>
-              <Button variant="outlined" onClick={handleResetFilters}>
-                Reset Filters
-              </Button>
-            </Grid>
-          </Grid>
-
-          <Box sx={{ height: 400, width: "100%", marginTop: 2 }}>
-            <DataGrid
-              rows={filteredData.map((row, index) => ({ id: index, ...row }))}
-              columns={columns}
-              pageSize={10}
-              rowsPerPageOptions={[10, 25, 50]}
-              disableSelectionOnClick
-              components={{
-                NoRowsOverlay: () => <Typography>No data matching the filter</Typography>,
-              }}
-            />
-          </Box>
+          <Chart chartData={chartData} currencyFormatter={currencyFormatter} />
+          <Filters
+            data={data}
+            selectedSport={selectedSport}
+            setSelectedSport={setSelectedSport}
+            selectedDateRange={selectedDateRange}
+            setSelectedDateRange={setSelectedDateRange}
+            searchText={searchText}
+            setSearchText={setSearchText}
+            handleFilter={handleFilter}
+            handleResetFilters={handleResetFilters}
+          />
+          <DataTable rows={filteredData.map((row, index) => ({ id: index, ...row }))} columns={columns} />
         </>
       )}
     </Box>
