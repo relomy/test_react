@@ -42,7 +42,14 @@ jobs:
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build project
-        run: ${{ steps.detect-package-manager.outputs.runner }} npm run build
+        run: |
+          if [ "${{ steps.detect-package-manager.outputs.manager }}" = "yarn" ]; then
+            echo "Using yarn -> yarn build"
+            yarn build
+          else
+            echo "Using npm -> npm run build"
+            npm run build
+          fi
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
