@@ -50,11 +50,19 @@ jobs:
             echo "Using npm -> npm run build"
             npm run build
           fi
+      - name: Verify build folder exists and show contents
+        run: |
+          echo "Build folder path: $PWD/build"
+          if [ ! -d "./build" ]; then
+            echo "ERROR: build/ not found. Did the build step fail?" >&2
+            exit 1
+          fi
+          echo "Listing build folder to confirm files:"
+          ls -la build | sed -n '1,200p'
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./build
-  # Deployment job
   deploy:
     environment:
       name: github-pages
