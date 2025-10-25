@@ -98,6 +98,7 @@ function App() {
     }
 
     setFilteredData(filtered);
+updateChartData(filtered);
   };
 
   const handleResetFilters = () => {
