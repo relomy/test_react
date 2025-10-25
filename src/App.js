@@ -26,8 +26,10 @@ function App() {
       complete: (results) => {
         const parsedData = results.data.map((row) => ({
           ...row,
-          Winnings_Non_Ticket: parseFloat(row["Winnings_Non_Ticket"].replace("$", "")) || 0,
-          Winnings_Ticket: parseFloat(row["Winnings_Ticket"].replace("$", "")) || 0,
+          Winnings_Non_Ticket:
+            parseFloat(row["Winnings_Non_Ticket"].replace("$", "")) || 0,
+          Winnings_Ticket:
+            parseFloat(row["Winnings_Ticket"].replace("$", "")) || 0,
           Entry_Fee: parseFloat(row["Entry_Fee"].replace("$", "")) || 0,
           Contest_Date_EST: dayjs(row["Contest_Date_EST"]),
         }));
@@ -84,7 +86,9 @@ function App() {
         "Last 365 Days": 365,
       }[selectedDateRange];
       const cutoffDate = dayjs().subtract(days, "day");
-      filtered = filtered.filter((row) => row.Contest_Date_EST.isAfter(cutoffDate));
+      filtered = filtered.filter((row) =>
+        row.Contest_Date_EST.isAfter(cutoffDate)
+      );
     }
 
     // Apply text search filter
@@ -98,7 +102,7 @@ function App() {
     }
 
     setFilteredData(filtered);
-updateChartData(filtered);
+    updateChartData(filtered);
   };
 
   const handleResetFilters = () => {
@@ -108,7 +112,11 @@ updateChartData(filtered);
     setFilteredData(data);
   };
 
-  const currencyFormatter = (value) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const currencyFormatter = (value) =>
+    `$${value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
 
   const columns = [
     {
@@ -118,7 +126,15 @@ updateChartData(filtered);
       valueFormatter: (params) => dayjs(params).format("YYYY-MM-DD HH:mm"),
     },
     ...Object.keys(data[0] || {})
-      .filter((key) => !["Game_Type", "Entry_Key", "Contest_Key", "Contest_Date_EST"].includes(key))
+      .filter(
+        (key) =>
+          ![
+            "Game_Type",
+            "Entry_Key",
+            "Contest_Key",
+            "Contest_Date_EST",
+          ].includes(key)
+      )
       .map((key) => ({ field: key, headerName: key, flex: 1 })),
   ];
 
@@ -142,7 +158,10 @@ updateChartData(filtered);
             handleFilter={handleFilter}
             handleResetFilters={handleResetFilters}
           />
-          <DataTable rows={filteredData.map((row, index) => ({ id: index, ...row }))} columns={columns} />
+          <DataTable
+            rows={filteredData.map((row, index) => ({ id: index, ...row }))}
+            columns={columns}
+          />
         </>
       )}
     </Box>
