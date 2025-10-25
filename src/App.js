@@ -114,7 +114,7 @@ function App() {
       field: "Contest_Date_EST",
       headerName: "Contest Date (EST)",
       flex: 1,
-      valueFormatter: (params) => dayjs(params.value).format("YYYY-MM-DD HH:mm"),
+      valueFormatter: (params) => dayjs(params).format("YYYY-MM-DD HH:mm"),
     },
     ...Object.keys(data[0] || {})
       .filter((key) => !["Game_Type", "Entry_Key", "Contest_Key", "Contest_Date_EST"].includes(key))
